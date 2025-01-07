@@ -1,5 +1,5 @@
 import React from 'react';
-import { Target, LockKeyhole, Coins, Trophy, ArrowRight, Sparkles } from 'lucide-react';
+import { Target, LockKeyhole, Coins, Trophy, ArrowRight, Sparkles, FileCheck } from 'lucide-react';
 
 export function HowItWorks() {
   const steps = [
@@ -10,18 +10,18 @@ export function HowItWorks() {
     },
     {
       icon: <LockKeyhole className="w-8 h-8 text-purple-500" />,
-      title: "Stake Your Assets",
-      description: "Lock your USDC as commitment. Your stake is securely held in Aave generating yield throughout the challenge."
+      title: "Register & Stake",
+      description: "Register during the registration period and stake required ETH on AAVE as commitment when the challenge begins."
     },
     {
-      icon: <Sparkles className="w-8 h-8 text-yellow-500" />,
-      title: "Complete Goals",
-      description: "Work towards your goals while your stake generates yield. Track progress and stay accountable."
+      icon: <FileCheck className="w-8 h-8 text-yellow-500" />,
+      title: "Submit Proofs",
+      description: "Document your progress by submitting proof of completion with descriptions and files."
     },
     {
       icon: <Trophy className="w-8 h-8 text-green-500" />,
-      title: "Earn Rewards",
-      description: "Successfully complete the challenge to reclaim your stake plus earned yield rewards."
+      title: "Complete & Earn",
+      description: "Successfully complete the challenge to reclaim your stake plus earned rewards."
     }
   ];
 
@@ -48,33 +48,33 @@ export function HowItWorks() {
       </div>
 
       <div className="glass-card p-8 mb-16">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">Yield Generation Model</h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">Challenge Features</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="flex items-start space-x-4">
             <div className="p-3 rounded-lg bg-blue-100">
-              <Coins className="w-6 h-6 text-blue-600" />
+              <Target className="w-6 h-6 text-blue-600" />
             </div>
             <div>
-              <h3 className="font-bold text-gray-900 mb-2">Secure Staking</h3>
-              <p className="text-gray-600">Your USDC is staked in Aave, a leading DeFi protocol with proven security</p>
-            </div>
-          </div>
-          <div className="flex items-start space-x-4">
-            <div className="p-3 rounded-lg bg-green-100">
-              <Sparkles className="w-6 h-6 text-green-600" />
-            </div>
-            <div>
-              <h3 className="font-bold text-gray-900 mb-2">Yield Farming</h3>
-              <p className="text-gray-600">Staked assets generate yield through Aave's lending markets</p>
+              <h3 className="font-bold text-gray-900 mb-2">Clear Goals</h3>
+              <p className="text-gray-600">Set specific, achievable goals with defined success criteria</p>
             </div>
           </div>
           <div className="flex items-start space-x-4">
             <div className="p-3 rounded-lg bg-purple-100">
-              <Trophy className="w-6 h-6 text-purple-600" />
+              <FileCheck className="w-6 h-6 text-purple-600" />
             </div>
             <div>
-              <h3 className="font-bold text-gray-900 mb-2">Reward Distribution</h3>
-              <p className="text-gray-600">Successful participants receive their stake plus generated yield</p>
+              <h3 className="font-bold text-gray-900 mb-2">Progress Tracking</h3>
+              <p className="text-gray-600">Submit and view proofs of completion throughout the challenge</p>
+            </div>
+          </div>
+          <div className="flex items-start space-x-4">
+            <div className="p-3 rounded-lg bg-green-100">
+              <Coins className="w-6 h-6 text-green-600" />
+            </div>
+            <div>
+              <h3 className="font-bold text-gray-900 mb-2">Stake & Earn</h3>
+              <p className="text-gray-600">Stake ETH and earn rewards upon successful completion</p>
             </div>
           </div>
         </div>
