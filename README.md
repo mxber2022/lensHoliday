@@ -55,7 +55,7 @@ npm run dev
 ## Smart Contract 📄
 
 The DreamContest smart contract is deployed on Lens testnet at:
-``
+`0x714DACba3412667443ecbfa4cdf501B52c80DDF4`
 
 ### Key Functions:
 
