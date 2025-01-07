@@ -42,7 +42,8 @@
   .input-primary {
     @apply w-full px-4 py-3 border border-gray-200 rounded-xl 
            focus:ring-2 focus:ring-primary-500 focus:border-primary-500
-           transition-all duration-200 bg-white/80 backdrop-blur-sm;
+           transition-all duration-200 bg-white/80 backdrop-blur-sm
+           focus:outline-none;
   }
 
   .nav-blur {
@@ -58,5 +59,33 @@
 
   .contest-grid {
     @apply grid grid-cols-1 md:grid-cols-2 gap-8 mb-12;
+  }
+
+  .status-badge {
+    @apply px-4 py-1.5 rounded-full text-sm font-medium
+           transition-all duration-300 relative overflow-hidden
+           flex items-center gap-2;
+  }
+
+  .status-badge::before {
+    content: '';
+    @apply absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent
+           -translate-x-full;
+  }
+
+  .status-badge:not(.disabled):hover::before {
+    @apply translate-x-full transition-transform duration-1000;
+  }
+
+  .timeline-dot {
+    @apply w-3 h-3 rounded-full transition-all duration-300;
+  }
+
+  .timeline-dot.active {
+    @apply shadow-lg shadow-primary-500/20;
+  }
+
+  .timeline-line {
+    @apply flex-1 border-t-2 border-dashed transition-all duration-300;
   }
 }

@@ -3,25 +3,15 @@ export interface Contest {
   title: string;
   description: string;
   goal: string;
-  totalStaked: number;
-  yieldGenerated: number;
   startDate: Date;
   endDate: Date;
-  participants: number;
-  status: 'active' | 'completed' | 'upcoming';
-}
-
-export interface Participant {
-  address: string;
-  stakedAmount: number;
-  joinedAt: Date;
-  progress: number;
-  achievedGoal: boolean;
-}
-
-export interface StakingStats {
+  registrationStartDate: Date;
+  registrationEndDate: Date;
   totalStaked: number;
-  totalYieldGenerated: number;
-  activeParticipants: number;
-  successRate: number;
+  yieldGenerated: number;
+  participants: number;
+  minStake: number;
+  status: 'registration' | 'upcoming' | 'pending_start' | 'active' | 'completed';
 }
+
+// ... rest of the types

@@ -7,57 +7,20 @@ import { HowItWorks } from './components/HowItWorks';
 import { Footer } from './components/Footer';
 import { CustomConnectButton } from './components/CustomConnectButton';
 import { Star } from 'lucide-react';
-import { Contest, StakingStats } from './types';
+import { useContests } from './hooks/useContests';
+import { LensLogo } from './components/LensLogo';
 
-// Mock data for development
-const mockStats: StakingStats = {
-  totalStaked: 1250000,
-  totalYieldGenerated: 75000,
-  activeParticipants: 1200,
-  successRate: 85
-};
-
-const mockContests: Contest[] = [
-  {
-    id: '1',
-    title: '30-Day Coding Challenge',
-    description: 'Complete daily coding challenges to improve your problem-solving skills',
-    goal: '30 challenges',
-    totalStaked: 500000,
-    yieldGenerated: 25000,
-    startDate: new Date('2024-03-01'),
-    endDate: new Date('2024-03-31'),
-    participants: 450,
-    status: 'active'
-  },
-  {
-    id: '2',
-    title: 'Full-Stack Project Sprint',
-    description: 'Build and deploy a full-stack application with specified features',
-    goal: 'Complete project',
-    totalStaked: 750000,
-    yieldGenerated: 50000,
-    startDate: new Date('2024-03-15'),
-    endDate: new Date('2024-04-15'),
-    participants: 750,
-    status: 'active'
-  }
-];
-
-function App() {
+export default function App() {
   const [isStakingModalOpen, setIsStakingModalOpen] = useState(false);
   const [selectedContestId, setSelectedContestId] = useState<string | null>(null);
   const [showCreateContest, setShowCreateContest] = useState(false);
   const [showHowItWorks, setShowHowItWorks] = useState(false);
 
+  const { contests, isLoading, error } = useContests();
+
   const handleJoinContest = (contestId: string) => {
     setSelectedContestId(contestId);
     setIsStakingModalOpen(true);
-  };
-
-  const handleStake = (amount: number) => {
-    console.log('Staking amount:', amount, 'for contest:', selectedContestId);
-    setIsStakingModalOpen(false);
   };
 
   return (
@@ -75,11 +38,15 @@ function App() {
                   DreamStake
                 </span>
                 <span className="text-sm text-primary-600 block -mt-1">
-                  Stake to Achieve
+                  Stake toward achieving dreams without risk
                 </span>
               </div>
             </div>
-            <div className="flex gap-4">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-600">Powered by</span>
+                <LensLogo />
+              </div>
               <button
                 onClick={() => {
                   setShowCreateContest(false);
@@ -104,39 +71,46 @@ function App() {
         </div>
       </nav>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {showHowItWorks ? (
-          <HowItWorks />
-        ) : showCreateContest ? (
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {showCreateContest ? (
           <CreateContestForm onBack={() => setShowCreateContest(false)} />
+        ) : showHowItWorks ? (
+          <HowItWorks />
         ) : (
           <>
-            <Dashboard stats={mockStats} />
-            <div className="mb-8">
-              <h2 className="text-3xl font-display font-bold text-gray-900 mb-6">Active Contests</h2>
-              <div className="contest-grid">
-                {mockContests.map((contest) => (
+            <Dashboard />
+            <div className="contest-grid">
+              {isLoading ? (
+                <div className="text-center col-span-full py-12">Loading contests...</div>
+              ) : error ? (
+                <div className="text-center col-span-full py-12 text-red-600">
+                  Error loading contests: {error.message}
+                </div>
+              ) : contests.length === 0 ? (
+                <div className="text-center col-span-full py-12">
+                  No contests available. Create one to get started!
+                </div>
+              ) : (
+                contests.map((contest) => (
                   <ContestCard
                     key={contest.id}
                     contest={contest}
                     onJoin={handleJoinContest}
                   />
-                ))}
-              </div>
+                ))
+              )}
             </div>
           </>
         )}
-
-        <StakingModal
-          isOpen={isStakingModalOpen}
-          onClose={() => setIsStakingModalOpen(false)}
-          onStake={handleStake}
-        />
       </main>
-      
+
+      <StakingModal
+        isOpen={isStakingModalOpen}
+        onClose={() => setIsStakingModalOpen(false)}
+        contestId={selectedContestId}
+      />
+
       <Footer />
     </div>
   );
 }
-
-export default App;

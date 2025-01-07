@@ -1,73 +1,253 @@
-import React from 'react';
-import { Trophy, Users, Timer, Coins, ArrowRight } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Trophy, Users, Timer, Coins, ArrowRight, AlertCircle, Calendar } from 'lucide-react';
 import { Contest } from '../types';
+import { useAccount, useReadContract } from 'wagmi';
+import { CONTRACT_ADDRESS, CONTRACT_ABI } from '../config/contract';
+import { ProofSubmissionModal } from './ProofSubmissionModal';
+import { RegistrationModal } from './RegistrationModal';
 
 interface ContestCardProps {
   contest: Contest;
   onJoin: (contestId: string) => void;
 }
 
+function formatDateTime(date: Date) {
+  return date.toLocaleString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true
+  });
+}
+
+function formatCountdown(timeLeft: number) {
+  const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+  const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+  if (days > 0) return `${days}d ${hours}h`;
+  if (hours > 0) return `${hours}h ${minutes}m`;
+  if (minutes > 0) return `${minutes}m ${seconds}s`;
+  return `${seconds}s`;
+}
+
 export function ContestCard({ contest, onJoin }: ContestCardProps) {
-  const timeLeft = new Date(contest.endDate).getTime() - new Date().getTime();
-  const daysLeft = Math.ceil(timeLeft / (1000 * 60 * 60 * 24));
+  const [timeLeft, setTimeLeft] = useState<number>(0);
+  const [showProofModal, setShowProofModal] = useState(false);
+  const [showRegistrationModal, setShowRegistrationModal] = useState(false);
+  
+  const { address } = useAccount();
+  const { data: isRegistered } = useReadContract({
+    address: CONTRACT_ADDRESS as `0x${string}`,
+    abi: CONTRACT_ABI,
+    functionName: 'registeredParticipants',
+    args: [BigInt(contest.id), address],
+    enabled: !!address
+  });
+
+  useEffect(() => {
+    if (contest.status === 'upcoming' || contest.status === 'pending_start') {
+      const targetDate = contest.status === 'upcoming' 
+        ? contest.registrationStartDate 
+        : contest.startDate;
+
+      const updateTimer = () => {
+        const now = new Date().getTime();
+        const distance = targetDate.getTime() - now;
+        setTimeLeft(Math.max(0, distance));
+      };
+
+      updateTimer();
+      const timer = setInterval(updateTimer, 1000);
+      return () => clearInterval(timer);
+    }
+  }, [contest.status, contest.registrationStartDate, contest.startDate]);
+
+  const progressPercentage = Math.min(100, (contest.totalStaked / (contest.minStake * 10)) * 100);
+
+  const getStatusConfig = (status: Contest['status']) => {
+    switch (status) {
+      case 'upcoming':
+        return {
+          label: 'Registration Opens Soon',
+          className: 'bg-yellow-100 text-yellow-800 border border-yellow-200'
+        };
+      case 'registration':
+        return {
+          label: 'Registration Open',
+          className: 'bg-blue-100 text-blue-800 border border-blue-200'
+        };
+      case 'pending_start':
+        return {
+          label: 'Starting Soon',
+          className: 'bg-purple-100 text-purple-800 border border-purple-200'
+        };
+      case 'active':
+        return {
+          label: 'Challenge in Progress',
+          className: 'bg-green-100 text-green-800 border border-green-200'
+        };
+      case 'completed':
+        return {
+          label: 'Challenge Ended',
+          className: 'bg-gray-100 text-gray-800 border border-gray-200'
+        };
+    }
+  };
+
+  const getActionButton = () => {
+    if (!address) {
+      return {
+        label: 'Connect Wallet',
+        disabled: true
+      };
+    }
+
+    switch (contest.status) {
+      case 'upcoming':
+        return {
+          label: 'Registration Opens Soon',
+          disabled: true
+        };
+      case 'registration':
+        return {
+          label: isRegistered ? 'Registered' : 'Register Now',
+          disabled: isRegistered
+        };
+      case 'pending_start':
+        return {
+          label: isRegistered ? 'Starting Soon' : 'Registration Closed',
+          disabled: true
+        };
+      case 'active':
+        return {
+          label: isRegistered ? 'Submit Proof' : 'Registration Required',
+          disabled: !isRegistered
+        };
+      default:
+        return {
+          label: 'Challenge Ended',
+          disabled: true
+        };
+    }
+  };
+
+  const handleAction = () => {
+    if (contest.status === 'registration' && !isRegistered) {
+      setShowRegistrationModal(true);
+    } else if (contest.status === 'active' && isRegistered) {
+      setShowProofModal(true);
+    }
+  };
+
+  const statusConfig = getStatusConfig(contest.status);
+  const button = getActionButton();
 
   return (
-    <div className="glass-card rounded-2xl p-8">
-      <div className="flex items-center justify-between mb-6">
+    <div className="glass-card rounded-2xl p-8 hover:scale-[1.02] transition-all duration-300">
+      <div className="flex items-center justify-between mb-4">
         <h3 className="text-2xl font-bold text-gray-800 group-hover:text-primary-600 transition-colors">
           {contest.title}
         </h3>
-        <span className={`px-4 py-1.5 rounded-full text-sm font-medium ${
-          contest.status === 'active' ? 'bg-green-100 text-green-800' :
-          contest.status === 'upcoming' ? 'bg-blue-100 text-blue-800' :
-          'bg-gray-100 text-gray-800'
-        }`}>
-          {contest.status.charAt(0).toUpperCase() + contest.status.slice(1)}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className={`status-badge ${statusConfig.className}`}>
+            {statusConfig.label}
+          </span>
+          {(contest.status === 'upcoming' || contest.status === 'pending_start') && timeLeft > 0 && (
+            <span className="text-sm font-medium bg-primary-50 text-primary-700 px-3 py-1 rounded-full">
+              {formatCountdown(timeLeft)}
+            </span>
+          )}
+        </div>
       </div>
       
-      <p className="text-gray-600 mb-8 text-lg">{contest.description}</p>
+      <p className="text-gray-600 mb-6 text-lg">{contest.description}</p>
+
+      <div className="mb-6">
+        <div className="flex justify-between mb-2">
+          <span className="text-sm font-medium text-gray-600">Progress</span>
+          <span className="text-sm font-medium text-primary-600">{progressPercentage.toFixed(1)}%</span>
+        </div>
+        <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+          <div 
+            className="h-full bg-primary-500 rounded-full transition-all duration-500"
+            style={{ width: `${progressPercentage}%` }}
+          />
+        </div>
+      </div>
       
       <div className="grid grid-cols-2 gap-6 mb-8">
         <div className="flex items-center gap-3 group/item">
-          <div className="p-3 rounded-xl bg-purple-50 group-hover/item:bg-purple-100 transition-colors">
+          <div className="p-3 rounded-xl bg-purple-50 group-hover/item:bg-purple-100 transition-colors border border-purple-100">
             <Trophy className="w-6 h-6 text-purple-500" />
           </div>
           <span className="text-base text-gray-700 font-medium">{contest.goal}</span>
         </div>
         <div className="flex items-center gap-3 group/item">
-          <div className="p-3 rounded-xl bg-blue-50 group-hover/item:bg-blue-100 transition-colors">
+          <div className="p-3 rounded-xl bg-blue-50 group-hover/item:bg-blue-100 transition-colors border border-blue-100">
             <Users className="w-6 h-6 text-blue-500" />
           </div>
           <span className="text-base text-gray-700 font-medium">{contest.participants} participants</span>
         </div>
         <div className="flex items-center gap-3 group/item">
-          <div className="p-3 rounded-xl bg-red-50 group-hover/item:bg-red-100 transition-colors">
+          <div className="p-3 rounded-xl bg-red-50 group-hover/item:bg-red-100 transition-colors border border-red-100">
             <Timer className="w-6 h-6 text-red-500" />
           </div>
-          <span className="text-base text-gray-700 font-medium">{daysLeft} days left</span>
+          <div className="flex flex-col">
+            <span className="text-base text-gray-700 font-medium">
+              {formatDateTime(contest.endDate)}
+            </span>
+            <span className="text-sm text-gray-500">Challenge End</span>
+          </div>
         </div>
         <div className="flex items-center gap-3 group/item">
-          <div className="p-3 rounded-xl bg-yellow-50 group-hover/item:bg-yellow-100 transition-colors">
-            <Coins className="w-6 h-6 text-yellow-500" />
+          <div className="p-3 rounded-xl bg-yellow-50 group-hover/item:bg-yellow-100 transition-colors border border-yellow-100">
+            <Calendar className="w-6 h-6 text-yellow-500" />
           </div>
-          <span className="text-base text-gray-700 font-medium">{contest.yieldGenerated.toFixed(2)} USDC yield</span>
+          <div className="flex flex-col">
+            <span className="text-base text-gray-700 font-medium">
+              {formatDateTime(contest.registrationEndDate)}
+            </span>
+            <span className="text-sm text-gray-500">Registration Ends</span>
+          </div>
         </div>
       </div>
 
       <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm font-medium text-gray-500 mb-1">Total Staked</p>
-          <p className="text-2xl font-bold text-gray-800">${contest.totalStaked.toLocaleString()}</p>
+        <div className="space-y-4">
+          <div>
+            <p className="text-sm font-medium text-gray-500 mb-1">Total Staked</p>
+            <p className="text-2xl font-bold text-gray-800">Ξ {contest.totalStaked.toFixed(4)}</p>
+          </div>
+          <div className="flex items-center gap-2 text-primary-600">
+            <AlertCircle className="w-4 h-4" />
+            <span className="text-sm font-medium">Min. Stake: Ξ {contest.minStake.toFixed(4)}</span>
+          </div>
         </div>
         <button
-          onClick={() => onJoin(contest.id)}
-          className="btn-primary flex items-center group/btn"
+          onClick={handleAction}
+          disabled={button.disabled}
+          className="btn-primary flex items-center group/btn disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Join Contest
+          {button.label}
           <ArrowRight className="w-5 h-5 ml-2 transform group-hover/btn:translate-x-1 transition-transform" />
         </button>
       </div>
+
+      <RegistrationModal
+        isOpen={showRegistrationModal}
+        onClose={() => setShowRegistrationModal(false)}
+        contest={contest}
+      />
+
+      <ProofSubmissionModal
+        isOpen={showProofModal}
+        onClose={() => setShowProofModal(false)}
+        contest={contest}
+      />
     </div>
   );
 }
