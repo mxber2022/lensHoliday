@@ -1,0 +1,248 @@
+{
+  "version": "3.4",
+  "log": [
+    {
+      "@openzeppelin/contracts/access/Ownable.sol:Ownable": {
+        "src": "@openzeppelin/contracts/access/Ownable.sol:18",
+        "inherit": [
+          "@openzeppelin/contracts/utils/Context.sol:Context"
+        ],
+        "libraries": [],
+        "methods": [
+          "owner()",
+          "renounceOwnership()",
+          "transferOwnership(address)"
+        ],
+        "linkReferences": [],
+        "errors": [
+          {
+            "kind": "constructor",
+            "contract": "Ownable",
+            "src": "@openzeppelin/contracts/access/Ownable.sol:26"
+          }
+        ],
+        "layout": {
+          "storage": [
+            {
+              "contract": "Ownable",
+              "label": "_owner",
+              "type": "t_address",
+              "src": "@openzeppelin/contracts/access/Ownable.sol:19"
+            }
+          ],
+          "types": {
+            "t_address": {
+              "label": "address"
+            }
+          },
+          "layoutVersion": "1.2",
+          "flat": false,
+          "namespaces": {}
+        },
+        "solcVersion": "0.8.24"
+      },
+      "@openzeppelin/contracts/security/ReentrancyGuard.sol:ReentrancyGuard": {
+        "src": "@openzeppelin/contracts/security/ReentrancyGuard.sol:21",
+        "inherit": [],
+        "libraries": [],
+        "methods": [],
+        "linkReferences": [],
+        "errors": [
+          {
+            "kind": "constructor",
+            "contract": "ReentrancyGuard",
+            "src": "@openzeppelin/contracts/security/ReentrancyGuard.sol:38"
+          }
+        ],
+        "layout": {
+          "storage": [
+            {
+              "contract": "ReentrancyGuard",
+              "label": "_status",
+              "type": "t_uint256",
+              "src": "@openzeppelin/contracts/security/ReentrancyGuard.sol:36"
+            }
+          ],
+          "types": {
+            "t_uint256": {
+              "label": "uint256"
+            }
+          },
+          "layoutVersion": "1.2",
+          "flat": false,
+          "namespaces": {}
+        },
+        "solcVersion": "0.8.24"
+      },
+      "@openzeppelin/contracts/utils/Context.sol:Context": {
+        "src": "@openzeppelin/contracts/utils/Context.sol:15",
+        "inherit": [],
+        "libraries": [],
+        "methods": [],
+        "linkReferences": [],
+        "errors": [],
+        "layout": {
+          "storage": [],
+          "types": {},
+          "layoutVersion": "1.2",
+          "flat": false,
+          "namespaces": {}
+        },
+        "solcVersion": "0.8.24"
+      },
+      "contracts/DreamContest.sol:DreamContest": {
+        "src": "contracts/DreamContest.sol:7",
+        "version": {
+          "withMetadata": "8b1a4b88ff984e500565a1f7cd6e7958d16343aa954a3ca501f8f61a26afdaf2",
+          "withoutMetadata": "8b1a4b88ff984e500565a1f7cd6e7958d16343aa954a3ca501f8f61a26afdaf2",
+          "linkedWithoutMetadata": "8b1a4b88ff984e500565a1f7cd6e7958d16343aa954a3ca501f8f61a26afdaf2"
+        },
+        "inherit": [
+          "@openzeppelin/contracts/access/Ownable.sol:Ownable",
+          "@openzeppelin/contracts/utils/Context.sol:Context",
+          "@openzeppelin/contracts/security/ReentrancyGuard.sol:ReentrancyGuard"
+        ],
+        "libraries": [],
+        "methods": [
+          "()",
+          "createContest(string,string,string,uint256,uint256,uint256,uint256,uint256)",
+          "registerForContest(uint256)",
+          "joinContest(uint256)",
+          "completeGoal(uint256,address)",
+          "claimRewards(uint256)",
+          "getContest(uint256)",
+          "getParticipant(uint256,address)"
+        ],
+        "linkReferences": [],
+        "errors": [],
+        "layout": {
+          "storage": [
+            {
+              "contract": "DreamContest",
+              "label": "contests",
+              "type": "t_mapping(t_uint256,t_struct(Contest)203_storage)",
+              "src": "contracts/DreamContest.sol:28"
+            },
+            {
+              "contract": "DreamContest",
+              "label": "contestParticipants",
+              "type": "t_mapping(t_uint256,t_mapping(t_address,t_struct(Participant)210_storage))",
+              "src": "contracts/DreamContest.sol:29"
+            },
+            {
+              "contract": "DreamContest",
+              "label": "registeredParticipants",
+              "type": "t_mapping(t_uint256,t_mapping(t_address,t_bool))",
+              "src": "contracts/DreamContest.sol:30"
+            },
+            {
+              "contract": "DreamContest",
+              "label": "contestCount",
+              "type": "t_uint256",
+              "src": "contracts/DreamContest.sol:31"
+            }
+          ],
+          "types": {
+            "t_mapping(t_uint256,t_struct(Contest)203_storage)": {
+              "label": "mapping(uint256 => struct DreamContest.Contest)"
+            },
+            "t_uint256": {
+              "label": "uint256"
+            },
+            "t_struct(Contest)203_storage": {
+              "label": "struct DreamContest.Contest",
+              "members": [
+                {
+                  "label": "title",
+                  "type": "t_string_storage"
+                },
+                {
+                  "label": "description",
+                  "type": "t_string_storage"
+                },
+                {
+                  "label": "goal",
+                  "type": "t_string_storage"
+                },
+                {
+                  "label": "startTime",
+                  "type": "t_uint256"
+                },
+                {
+                  "label": "endTime",
+                  "type": "t_uint256"
+                },
+                {
+                  "label": "registrationStartTime",
+                  "type": "t_uint256"
+                },
+                {
+                  "label": "registrationEndTime",
+                  "type": "t_uint256"
+                },
+                {
+                  "label": "totalStaked",
+                  "type": "t_uint256"
+                },
+                {
+                  "label": "minStake",
+                  "type": "t_uint256"
+                },
+                {
+                  "label": "participantCount",
+                  "type": "t_uint256"
+                },
+                {
+                  "label": "active",
+                  "type": "t_bool"
+                }
+              ]
+            },
+            "t_string_storage": {
+              "label": "string"
+            },
+            "t_bool": {
+              "label": "bool"
+            },
+            "t_mapping(t_uint256,t_mapping(t_address,t_struct(Participant)210_storage))": {
+              "label": "mapping(uint256 => mapping(address => struct DreamContest.Participant))"
+            },
+            "t_mapping(t_address,t_struct(Participant)210_storage)": {
+              "label": "mapping(address => struct DreamContest.Participant)"
+            },
+            "t_address": {
+              "label": "address"
+            },
+            "t_struct(Participant)210_storage": {
+              "label": "struct DreamContest.Participant",
+              "members": [
+                {
+                  "label": "stakedAmount",
+                  "type": "t_uint256"
+                },
+                {
+                  "label": "hasCompleted",
+                  "type": "t_bool"
+                },
+                {
+                  "label": "hasWithdrawn",
+                  "type": "t_bool"
+                }
+              ]
+            },
+            "t_mapping(t_uint256,t_mapping(t_address,t_bool))": {
+              "label": "mapping(uint256 => mapping(address => bool))"
+            },
+            "t_mapping(t_address,t_bool)": {
+              "label": "mapping(address => bool)"
+            }
+          },
+          "layoutVersion": "1.2",
+          "flat": false,
+          "namespaces": {}
+        },
+        "solcVersion": "0.8.24"
+      }
+    }
+  ]
+}
