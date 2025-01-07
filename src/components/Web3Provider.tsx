@@ -1,6 +1,6 @@
 import React from 'react';
 import { WagmiProvider, createConfig, http } from 'wagmi';
-import { sepolia } from 'wagmi/chains';
+import { chains } from "@lens-network/sdk/viem";
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ConnectKitProvider, getDefaultConfig } from 'connectkit';
 
@@ -8,9 +8,9 @@ const config = createConfig(
   getDefaultConfig({
     appName: 'DreamStake',
     walletConnectProjectId: import.meta.env.VITE_WALLETCONNECT_PROJECT_ID!,
-    chains: [sepolia],
+    chains: [chains.testnet],
     transports: {
-      [sepolia.id]: http()
+      [chains.testnet.id]: http()
     },
   })
 );

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Trophy, Users, Timer, Coins, ArrowRight, AlertCircle, Calendar, ChevronDown, ChevronUp } from 'lucide-react';
+import { Trophy, Users, Timer, Coins, ArrowRight, AlertCircle, Calendar } from 'lucide-react';
 import { Contest } from '../types';
 import { useAccount, useReadContract } from 'wagmi';
 import { CONTRACT_ADDRESS, CONTRACT_ABI } from '../config/contract';
@@ -36,10 +36,11 @@ function formatTimeLeft(timeLeft: number) {
 }
 
 export function ContestCard({ contest, onJoin }: ContestCardProps) {
-  const [showRegistrationModal, setShowRegistrationModal] = useState(false);
   const [showProofModal, setShowProofModal] = useState(false);
+  const [showRegistrationModal, setShowRegistrationModal] = useState(false);
+  const [registrationTimeLeft, setRegistrationTimeLeft] = useState<number>(0);
+  const [challengeTimeLeft, setChallengeTimeLeft] = useState<number>(0);
   const [showProofs, setShowProofs] = useState(false);
-  const [timeLeft, setTimeLeft] = useState<number>(0);
   
   const { address } = useAccount();
   const { data: isRegistered } = useReadContract({
@@ -51,19 +52,32 @@ export function ContestCard({ contest, onJoin }: ContestCardProps) {
   });
 
   useEffect(() => {
-    if (contest.status === 'pending_start') {
-      const updateTimer = () => {
-        const now = new Date().getTime();
-        const start = contest.startDate.getTime();
-        const remaining = start - now;
-        setTimeLeft(remaining > 0 ? remaining : 0);
-      };
+    const updateTimers = () => {
+      const now = new Date().getTime();
 
-      updateTimer();
-      const interval = setInterval(updateTimer, 1000);
-      return () => clearInterval(interval);
-    }
-  }, [contest.status, contest.startDate]);
+      // Update registration timer
+      if (contest.status === 'upcoming') {
+        const start = contest.registrationStartDate.getTime();
+        setRegistrationTimeLeft(Math.max(0, start - now));
+      } else if (contest.status === 'registration') {
+        const end = contest.registrationEndDate.getTime();
+        setRegistrationTimeLeft(Math.max(0, end - now));
+      }
+
+      // Update challenge timer
+      if (contest.status === 'pending_start') {
+        const start = contest.startDate.getTime();
+        setChallengeTimeLeft(Math.max(0, start - now));
+      } else if (contest.status === 'active') {
+        const end = contest.endDate.getTime();
+        setChallengeTimeLeft(Math.max(0, end - now));
+      }
+    };
+
+    updateTimers();
+    const interval = setInterval(updateTimers, 1000);
+    return () => clearInterval(interval);
+  }, [contest.status, contest.registrationStartDate, contest.registrationEndDate, contest.startDate, contest.endDate]);
 
   const progressPercentage = Math.min(100, (contest.totalStaked / (contest.minStake * 10)) * 100);
 
@@ -71,22 +85,22 @@ export function ContestCard({ contest, onJoin }: ContestCardProps) {
     switch (status) {
       case 'upcoming':
         return {
-          label: 'Registration Opens Soon',
+          label: `Registration opens in ${formatTimeLeft(registrationTimeLeft)}`,
           className: 'bg-yellow-100 text-yellow-800 border border-yellow-200'
         };
       case 'registration':
         return {
-          label: 'Registration Open',
+          label: `Registration ends in ${formatTimeLeft(registrationTimeLeft)}`,
           className: 'bg-blue-100 text-blue-800 border border-blue-200'
         };
       case 'pending_start':
         return {
-          label: `Starting in ${formatTimeLeft(timeLeft)}`,
+          label: `Challenge starts in ${formatTimeLeft(challengeTimeLeft)}`,
           className: 'bg-purple-100 text-purple-800 border border-purple-200'
         };
       case 'active':
         return {
-          label: 'Challenge in Progress',
+          label: `Challenge ends in ${formatTimeLeft(challengeTimeLeft)}`,
           className: 'bg-green-100 text-green-800 border border-green-200'
         };
       case 'completed':
@@ -101,51 +115,52 @@ export function ContestCard({ contest, onJoin }: ContestCardProps) {
     if (!address) {
       return {
         label: 'Connect Wallet',
-        disabled: true,
-        action: null
+        disabled: true
       };
     }
 
     switch (contest.status) {
       case 'upcoming':
         return {
-          label: 'Registration Opens Soon',
-          disabled: true,
-          action: null
+          label: `Opens in ${formatTimeLeft(registrationTimeLeft)}`,
+          disabled: true
         };
       case 'registration':
         return {
           label: isRegistered ? 'Registered' : 'Register Now',
-          disabled: isRegistered,
-          action: () => setShowRegistrationModal(true)
+          disabled: isRegistered
         };
       case 'pending_start':
         return {
-          label: isRegistered ? `Starting in ${formatTimeLeft(timeLeft)}` : 'Registration Closed',
-          disabled: true,
-          action: null
+          label: isRegistered ? `Starts in ${formatTimeLeft(challengeTimeLeft)}` : 'Registration Closed',
+          disabled: true
         };
       case 'active':
         return {
           label: isRegistered ? 'Submit Proof' : 'Registration Required',
-          disabled: !isRegistered,
-          action: () => setShowProofModal(true)
+          disabled: !isRegistered
         };
       default:
         return {
           label: 'Challenge Ended',
-          disabled: true,
-          action: null
+          disabled: true
         };
     }
   };
 
+  const handleAction = () => {
+    if (contest.status === 'registration' && !isRegistered) {
+      setShowRegistrationModal(true);
+    } else if (contest.status === 'active' && isRegistered) {
+      setShowProofModal(true);
+    }
+  };
+
   const statusConfig = getStatusConfig(contest.status);
-  const actionButton = getActionButton();
+  const button = getActionButton();
 
   return (
     <div className="glass-card rounded-2xl p-8 hover:scale-[1.02] transition-all duration-300">
-      {/* Rest of the component remains the same */}
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-2xl font-bold text-gray-800 group-hover:text-primary-600 transition-colors">
           {contest.title}
@@ -218,35 +233,32 @@ export function ContestCard({ contest, onJoin }: ContestCardProps) {
             <span className="text-sm font-medium">Min. Stake: Ξ {contest.minStake.toFixed(4)}</span>
           </div>
         </div>
-        <button
-          onClick={() => actionButton.action?.()}
-          disabled={actionButton.disabled}
-          className="btn-primary flex items-center group/btn disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {actionButton.label}
-          <ArrowRight className="w-5 h-5 ml-2 transform group-hover/btn:translate-x-1 transition-transform" />
-        </button>
+        <div className="flex flex-col gap-2">
+          <button
+            onClick={handleAction}
+            disabled={button.disabled}
+            className="btn-primary flex items-center group/btn disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {button.label}
+            <ArrowRight className="w-5 h-5 ml-2 transform group-hover/btn:translate-x-1 transition-transform" />
+          </button>
+          {isRegistered && (
+            <button
+              onClick={() => setShowProofs(!showProofs)}
+              className="text-sm text-primary-600 hover:text-primary-700"
+            >
+              {showProofs ? 'Hide Proofs' : 'View Proofs'}
+            </button>
+          )}
+        </div>
       </div>
 
-      <div className="mt-8 border-t border-gray-100 pt-6">
-        <button
-          onClick={() => setShowProofs(!showProofs)}
-          className="flex items-center justify-between w-full text-left"
-        >
-          <span className="text-lg font-medium text-gray-900">Submitted Proofs</span>
-          {showProofs ? (
-            <ChevronUp className="w-5 h-5 text-gray-500" />
-          ) : (
-            <ChevronDown className="w-5 h-5 text-gray-500" />
-          )}
-        </button>
-        
-        {showProofs && (
-          <div className="mt-4">
-            <ProofList contestId={contest.id} />
-          </div>
-        )}
-      </div>
+      {showProofs && (
+        <div className="mt-8 pt-8 border-t border-gray-200">
+          <h4 className="text-lg font-semibold mb-4">Submitted Proofs</h4>
+          <ProofList contestId={contest.id} />
+        </div>
+      )}
 
       <RegistrationModal
         isOpen={showRegistrationModal}

@@ -33,10 +33,9 @@
   }
   
   .btn-secondary {
-    @apply px-6 py-2.5 bg-white text-primary-600 rounded-xl hover:bg-primary-50 
-           transition-all duration-300 shadow-lg shadow-gray-200/50 
-           hover:shadow-primary-100/50 hover:-translate-y-0.5 border border-primary-100
-           active:translate-y-0;
+    @apply px-4 py-2 bg-white text-primary-600 rounded-xl hover:bg-primary-50 
+           transition-all duration-300 shadow-sm hover:shadow-md border border-primary-100
+           active:translate-y-0 text-sm font-medium;
   }
   
   .input-primary {
@@ -47,8 +46,17 @@
   }
 
   .nav-blur {
-    @apply bg-white/90 backdrop-blur-xl border-b border-gray-200/80 
-           sticky top-0 z-10 transition-all duration-300;
+    @apply bg-white/80 backdrop-blur-xl border-b border-gray-200/80 
+           sticky top-0 z-50 transition-all duration-300
+           shadow-sm;
+  }
+
+  .nav-logo {
+    @apply flex items-center gap-3 hover:opacity-80 transition-opacity;
+  }
+
+  .nav-actions {
+    @apply flex items-center gap-3;
   }
 
   .dashboard-card {
@@ -61,31 +69,5 @@
     @apply grid grid-cols-1 md:grid-cols-2 gap-8 mb-12;
   }
 
-  .status-badge {
-    @apply px-4 py-1.5 rounded-full text-sm font-medium
-           transition-all duration-300 relative overflow-hidden
-           flex items-center gap-2;
-  }
-
-  .status-badge::before {
-    content: '';
-    @apply absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent
-           -translate-x-full;
-  }
-
-  .status-badge:not(.disabled):hover::before {
-    @apply translate-x-full transition-transform duration-1000;
-  }
-
-  .timeline-dot {
-    @apply w-3 h-3 rounded-full transition-all duration-300;
-  }
-
-  .timeline-dot.active {
-    @apply shadow-lg shadow-primary-500/20;
-  }
-
-  .timeline-line {
-    @apply flex-1 border-t-2 border-dashed transition-all duration-300;
-  }
+  /* Rest of the component classes... */
 }
