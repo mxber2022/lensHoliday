@@ -2,6 +2,14 @@
 
 Dream Stake is a decentralized contest platform where participants pool their assets, which are then staked in yield-generating protocols like Aave. Participants compete by completing predefined goals, and those who successfully achieve these goals share the interest earned on the pooled assets.
 
+## Prototype app Link
+
+https://remarkable-taiyaki-2669d9.netlify.app/
+
+## Demo video Link
+
+https://youtu.be/BcPWDk033IQ
+
 ## Features ✨
 
 - **Challenge Creation**: Create custom challenges with specific goals and timeframes
